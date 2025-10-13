@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
 <title>MEZO — Green & Grains</title>
 <style>
   :root{
@@ -12,7 +12,7 @@
     --text:#333;
     --radius:12px;
     --shadow:0 6px 20px rgba(46,125,50,0.12);
-    --glass: rgba(255,255,255,0.85);
+    --glass:rgba(255,255,255,0.85);
   }
   *{box-sizing:border-box;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
   html,body{height:100%;margin:0;background:linear-gradient(135deg,#eaf6ea 0%, #f1fbf1 50%);color:var(--text);}
@@ -23,8 +23,11 @@
   .logo{font-weight:900;font-size:1.25rem;text-decoration:none;color:#fff}
   .tag{font-size:0.9rem;opacity:0.95}
   .spacer{flex:1}
-  .category-title{font-weight:700;font-size:1rem}
-  .dropdown{border-radius:8px;padding:6px 8px;border:none;font-weight:600}
+  .category-title{font-weight:700;font-size:1rem;text-transform:capitalize;}
+  .dropdown{
+    background:#fff;color:var(--primary-green);border:none;padding:6px 10px;border-radius:8px;
+    font-weight:600;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.1);
+  }
   .container{max-width:1200px;margin:18px auto;padding:0 16px 90px;}
   .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
   .card{
@@ -54,90 +57,134 @@
 </head>
 <body>
 
-  <header class="header">
-    <a id="home-link" class="logo" href="index.html">MEZO</a>
-    <div class="tag">Taste the Wild Essence of Nature 🌱</div>
-    <div class="spacer"></div>
-    <div class="category-title">Green & Grains</div>
-    <select id="category-select" class="dropdown" onchange="navigateTo(this.value)">
-      
-      <option value="pizzas.html">Thin Crust Pizzas</option>
-      <option value="mains.html">Mains & Pastas</option>
-      <option value="desserts.html">Desserts</option>
-      <option value="drinks.html">Drinks</option>
-      <option value="green-grains.html" selected>Green & Grains</option>
-    </select>
-  </header>
+<header class="header">
+  <a id="home-link" class="logo" href="index.html">MEZO</a>
+  <div class="tag">Taste the Wild Essence of Nature 🌱</div>
+  <div class="spacer"></div>
+  <div class="category-title">Green & Grains </div>
+  <select id="category-select" class="dropdown" onchange="navigateTo(this.value)">
+    <option value="index.html">All Categories</option>
+    <option value="pizzas.html">Thin Crust Pizzas</option>
+    <option value="desserts.html">Desserts</option>
+    <option value="drinks.html">Drinks</option>
+    <option value="veg-appetizer.html">Veg Appetizer</option>
+    <option value="green-grains.html" selected>Green & Grains</option>
+  </select>
+</header>
 
-  <main class="container">
-    <section class="grid" id="menu-grid"></section>
-  </main>
+<main class="container">
+  <section class="grid" id="menu-grid"></section>
+</main>
 
-  <a id="checkout-link" class="floating-cart" href="checkout.html" title="View cart">
-    <div>🛒</div>
-    <div style="display:flex;flex-direction:column;line-height:1">
-      <div style="font-size:0.8rem">Cart</div>
-      <div class="tot" id="cart-summary">0 items • ₹0</div>
-    </div>
-  </a>
+<a id="checkout-link" class="floating-cart" href="checkout.html" title="View cart">
+  <div>🛒</div>
+  <div style="display:flex;flex-direction:column;line-height:1">
+    <div style="font-size:0.8rem">Cart</div>
+    <div class="tot" id="cart-summary">0 items • ₹0</div>
+  </div>
+</a>
 
-  <a id="back-home" class="back-home" href="index.html">← Home</a>
+<a id="back-home" class="back-home" href="index.html">← Home</a>
 
-  <div id="toast">Added to cart</div>
+<div id="toast">Added to cart</div>
 
 <script>
 const tableNumber = new URLSearchParams(window.location.search).get('table') || 'N/A';
 
-function getCart(){ try{ return JSON.parse(localStorage.getItem('mezoCart')||'[]'); }catch(e){return [];} }
-function saveCart(cart){ localStorage.setItem('mezoCart', JSON.stringify(cart)); updateCartIcon(); }
+function getCart(){ try{return JSON.parse(localStorage.getItem('mezoCart')||'[]');}catch(e){return [];} }
+function saveCart(c){ localStorage.setItem('mezoCart',JSON.stringify(c)); updateCartIcon(); }
 function updateCartIcon(bounce=false){
-  const cart = getCart();
-  const count = cart.reduce((s,i)=>s+i.quantity,0);
-  const total = cart.reduce((s,i)=>s+i.quantity*i.price,0);
-  document.getElementById('cart-summary').textContent = `${count} item${count!==1?'s':''} • ₹${total}`;
-  const base = 'checkout.html' + (tableNumber !== 'N/A' ? `?table=${encodeURIComponent(tableNumber)}` : '');
-  document.getElementById('checkout-link').href = base;
-  const homeHref = 'index.html' + (tableNumber !== 'N/A' ? `?table=${encodeURIComponent(tableNumber)}` : '');
-  document.getElementById('home-link').href = homeHref;
-  document.getElementById('back-home').href = homeHref;
+  const c=getCart();
+  const count=c.reduce((s,i)=>s+i.quantity,0);
+  const total=c.reduce((s,i)=>s+i.quantity*i.price,0);
+  document.getElementById('cart-summary').textContent=`${count} item${count!==1?'s':''} • ₹${total}`;
+  const base='checkout.html'+(tableNumber!=='N/A'?`?table=${encodeURIComponent(tableNumber)}`:'');
+  document.getElementById('checkout-link').href=base;
+  const home='index.html'+(tableNumber!=='N/A'?`?table=${encodeURIComponent(tableNumber)}`:'');
+  document.getElementById('home-link').href=home;
+  document.getElementById('back-home').href=home;
   if(bounce){
-    const el = document.getElementById('checkout-link');
-    el.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-8px)' }, { transform: 'translateY(0)' }], { duration: 450 });
+    document.getElementById('checkout-link')
+      .animate([{transform:'translateY(0)'},{transform:'translateY(-8px)'},{transform:'translateY(0)'}],{duration:450});
   }
 }
-function showToast(msg){
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2000);
-}
-function navigateTo(p){
-  const url = p + (tableNumber !== 'N/A' ? `?table=${encodeURIComponent(tableNumber)}` : '');
-  window.location.href = url;
-}
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 
-/* ---------- Green & Grains Menu ---------- */
-const menuItems = [
-  { id:1, name:"Goat Cheese Mousse", vegPrice:525, nonVegPrice:575, description:"Beetroot, Citrus Segments, Almond, Arugula, Pumpkin Cracker" },
-  { id:2, name:"Blueberry Ricotta", vegPrice:525, nonVegPrice:575, description:"Walnuts, Avocado, Mix Leaf, Honey Balsamic Dressing" },
-  { id:3, name:"Green Apple Quinoa", vegPrice:525, nonVegPrice:575, description:"Roasted Almonds, Leaves, Pomegranate, Chick Pea, Lemon Mustard Dressing" },
-  { id:4, name:"Italian Truffle Caesar", vegPrice:525, nonVegPrice:575, description:"Romaine, Ice Berg, Sour Dough Crouton, Shaved Parmesan" },
-  { id:5, name:"Green Salad", vegPrice:345, nonVegPrice:null, description:"Onion, Tomato, Cucumber, Carrot, Green Chili, Lemon" }
+function navigateTo(page){
+  const tableParam = tableNumber !== 'N/A' ? `?table=${encodeURIComponent(tableNumber)}` : '';
+  window.location.href = page + tableParam;
+}const menuItems = [
+  // Johnnie Walker Blue Label
+  {
+    id: 1,
+    name: "🟢 Goat Cheese Mouse",
+    price: 525,
+    description: "Beetroot,Citrus Segments,Almond,Arugula,Pumpkin cracker"
+  },
+  {
+    id: 2,
+    name: "🔴 Goat Cheese Mouse",
+    price: 575,
+    description: "Beetroot,Citrus Segments,Almond,Arugula,Pumpkin cracker"
+  },
+  {
+    id: 3,
+    name: "🟢 Blueberry ricotta",
+    price: 525,
+    description: "Walnuts,Avocado,Mix leaf,Honey,Balsmic Dressing"
+  },
+  // Royal Salute
+  {
+    id: 4,
+    name:  "🔴 Blueberry ricotta",
+    price: 575,
+    description: "Walnuts,Avocado,Mix leaf,Honey,Balsmic Dressing"
+  },
+  {
+    id: 5,
+    name: "🟢 Green Apple Quinoa",
+    price: 525,
+    description: "Roasted Almonds,Leaves ,Pomegranate,Chick Pea,Lemon Mustard Dressing"
+  },
+  {
+    id: 6,
+    name: "🔴Green Apple Quinoa",
+    price: 575,
+    description: "Roasted Almonds,Leaves ,Pomegranate,Chick Pea,Lemon Mustard Dressing"
+  },
+  // Chivas Regal 18 Yo.
+  {
+    id: 7,
+    name: "🟢Indian Truffle Caesar",
+    price: 525,
+    description: "Romaine,Ice Berg,Sour Dough Crouton,Shaved parmesan"
+  },
+  {
+    id: 8,
+    name: "🔴Indian Truffle Caesar",
+    price: 575,
+    description: "Romaine,Ice Berg,Sour Dough Crouton,Shaved parmesan"
+  },
+  {
+    id: 9,
+    name: "🟢Green Salad",
+    price: 345,
+    description: "Onion,Tomato,Cucumber,Carrot,Green,Chili,Lemon"
+  }
 ];
 
+/* ✅ Render Menu */
 function renderMenu(){
-  const grid = document.getElementById('menu-grid');
-  grid.innerHTML = '';
+  const grid=document.getElementById('menu-grid');
+  grid.innerHTML='';
   for(const item of menuItems){
-    const priceLine = item.nonVegPrice 
-      ? `Veg ₹${item.vegPrice}  •  Non-Veg ₹${item.nonVegPrice}`
-      : `₹${item.vegPrice}`;
-    const card = document.createElement('article');
-    card.className = 'card';
-    card.innerHTML = `
+    const card=document.createElement('article');
+    card.className='card';
+    card.innerHTML=`
       <div class="dish">${escapeHtml(item.name)}</div>
       <div class="desc">${escapeHtml(item.description)}</div>
-      <div class="price">${priceLine}</div>
+      <div class="price">₹${item.price}</div>
       <div class="controls">
         <div class="qty-control" style="margin-right:auto">
           <button class="qty-btn" data-action="dec">−</button>
@@ -145,55 +192,44 @@ function renderMenu(){
           <button class="qty-btn" data-action="inc">+</button>
         </div>
         <button class="add-btn" data-add="${item.id}">Add to cart</button>
-      </div>
-    `;
+      </div>`;
     grid.appendChild(card);
   }
 }
 
-function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m]); }
-
-function addToCart(itemId, qty){
-  const item = menuItems.find(i=>i.id===itemId);
-  if(!item) return;
-  const cart = getCart();
-  const existing = cart.find(c=>c.id===itemId);
-  const price = item.vegPrice;
-  if(existing) existing.quantity += qty;
-  else cart.push({ id:item.id, name:item.name, price:price, quantity:qty });
-  saveCart(cart);
-  showToast(`✅ ${qty} x ${item.name} added`);
-  updateCartIcon(true);
+/* ✅ Add to Cart */
+function addToCart(id,qty){
+  const item=menuItems.find(i=>i.id===id);
+  if(!item)return;
+  const c=getCart();const e=c.find(x=>x.id===id);
+  if(e)e.quantity+=qty;else c.push({id:item.id,name:item.name,price:item.price,quantity:qty});
+  saveCart(c);showToast(`✅ ${qty} x ${item.name} added`);updateCartIcon(true);
 }
 
-document.addEventListener('click', function(e){
-  const dec = e.target.closest('[data-action="dec"]');
-  const inc = e.target.closest('[data-action="inc"]');
-  if(dec || inc){
-    const parent = (dec||inc).closest('.qty-control');
-    const input = parent.querySelector('.qty-input');
-    let v = parseInt(input.value)||1;
-    v = dec ? Math.max(1, v-1) : v+1;
-    input.value = v;
-    return;
+/* ✅ Event Handlers */
+document.addEventListener('click',e=>{
+  const dec=e.target.closest('[data-action="dec"]');
+  const inc=e.target.closest('[data-action="inc"]');
+  if(dec||inc){
+    const input=(dec||inc).closest('.qty-control').querySelector('.qty-input');
+    let v=parseInt(input.value)||1;
+    v=dec?Math.max(1,v-1):v+1;
+    input.value=v;return;
   }
-  const addBtn = e.target.closest('[data-add]');
-  if(addBtn){
-    const id = Number(addBtn.getAttribute('data-add'));
-    const parent = addBtn.closest('.card');
-    const input = parent.querySelector('.qty-input');
-    const qty = Math.max(1, parseInt(input.value)||1);
-    addToCart(id, qty);
-    input.value = 1;
+  const add=e.target.closest('[data-add]');
+  if(add){
+    const id=Number(add.getAttribute('data-add'));
+    const input=add.closest('.card').querySelector('.qty-input');
+    const qty=Math.max(1,parseInt(input.value)||1);
+    addToCart(id,qty);input.value=1;return;
   }
 });
 
-document.addEventListener('DOMContentLoaded', ()=>{
-  renderMenu();
-  updateCartIcon();
-  if(tableNumber !== 'N/A'){ document.title = `MEZO — Green & Grains — Table ${tableNumber}`; }
+/* ✅ Initialize */
+document.addEventListener('DOMContentLoaded',()=>{
+  renderMenu();updateCartIcon();
+  if(tableNumber!=='N/A')document.title=`MEZO — Japanese Whiskey — Table ${tableNumber}`;
 });
 </script>
 </body>
 </html>
-
