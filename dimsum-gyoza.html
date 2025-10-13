@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>MEZO — Thin Crust Pizzas</title>
+<style>
+  :root{
+    --primary-green:#2e7d32;
+    --accent-green:#66bb6a;
+    --light-bg:#f1f8e9;
+    --text:#333;
+    --radius:12px;
+    --shadow:0 6px 20px rgba(46,125,50,0.12);
+    --glass: rgba(255,255,255,0.85);
+  }
+  *{box-sizing:border-box;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+  html,body{height:100%;margin:0;background:linear-gradient(135deg,#eaf6ea 0%, #f1fbf1 50%);color:var(--text);}
+  /* Header */
+  .header{
+    position:sticky;top:0;z-index:120;background:linear-gradient(90deg,var(--primary-green),var(--accent-green));
+    color:#fff;padding:14px 16px;display:flex;align-items:center;gap:12px;backdrop-filter:blur(4px);
+  }
+  .logo{font-weight:900;font-size:1.25rem;text-decoration:none;color:#fff}
+  .tag{font-size:0.9rem;opacity:0.95}
+  .spacer{flex:1}
+  .category-title{font-weight:700;font-size:1rem}
+  .dropdown{border-radius:8px;padding:6px 8px;border:none;font-weight:600}
+  /* Layout */
+  .container{max-width:1200px;margin:18px auto;padding:0 16px 90px;}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .card{
+    background:var(--glass);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);
+    display:flex;flex-direction:column;min-height:170px;border-left:6px solid var(--accent-green);
+  }
+  .dish{font-weight:800;color:var(--primary-green);font-size:1.05rem;margin-bottom:6px}
+  .desc{color:#586066;font-size:0.9rem;flex:1;margin-bottom:8px}
+  .price{font-weight:700;margin-bottom:10px}
+  .controls{display:flex;gap:10px;align-items:center}
+  .qty-control{display:flex;align-items:center;border-radius:8px;overflow:hidden;border:1px solid rgba(0,0,0,0.06)}
+  .qty-btn{background:var(--accent-green);border:none;color:#fff;padding:8px 10px;cursor:pointer;font-weight:700}
+  .qty-input{width:46px;text-align:center;border:0;padding:8px;font-weight:700}
+  .add-btn{background:var(--primary-green);border:none;color:#fff;padding:10px 12px;border-radius:8px;cursor:pointer;font-weight:800}
+  /* Floating cart & back */
+  .floating-cart{position:fixed;right:16px;bottom:16px;background:linear-gradient(180deg,var(--primary-green),var(--accent-green));color:#fff;border-radius:999px;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 12px 30px rgba(46,125,50,0.18);z-index:200}
+  .floating-cart .tot{font-weight:800;font-size:0.95rem}
+  .back-home{position:fixed;left:16px;bottom:18px;background:var(--accent-green);color:#fff;padding:8px 12px;border-radius:10px;text-decoration:none;box-shadow:0 8px 18px rgba(46,125,50,0.12)}
+  /* Toast */
+  #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:26px;background:var(--primary-green);color:#fff;padding:10px 14px;border-radius:10px;opacity:0;pointer-events:none;transition:300ms;z-index:300}
+  #toast.show{opacity:1;pointer-events:auto}
+  /* Responsive */
+  @media (max-width:1000px){ .grid{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width:640px){
+    .grid{grid-template-columns:1fr;gap:12px}
+    .header{flex-wrap:wrap;padding:12px}
+    .category-title{display:block;width:100%;margin-top:6px}
+  }
+</style>
+</head>
+<body>
+
+  <header class="header">
+    <a id="home-link" class="logo" href="index.html">MEZO</a>
+    <div class="tag">Taste the Wild Essence of Nature 🌱</div>
+    <div class="spacer"></div>
+    <div class="category-title">Dimsum & Gyoza</div>
+    <select id="category-select" class="dropdown" onchange="navigateTo(this.value)">
+      <option value="dimsum-gyoza.html" selected>Dimsum & Gyoza</option>
+      <option value="pizzas.html">Thin Crust Pizzas</option>
+      <option value="mains.html">Mains & Pastas</option>
+      <option value="desserts.html">Desserts</option>
+      <option value="drinks.html">Drinks</option>
+    </select>
+  </header>
+
+  <main class="container">
+    <section class="grid" id="menu-grid"></section>
+  </main>
+
+  <a id="checkout-link" class="floating-cart" href="checkout.html" title="View cart">
+    <div>🛒</div>
+    <div style="display:flex;flex-direction:column;line-height:1">
+      <div style="font-size:0.8rem">Cart</div>
+      <div class="tot" id="cart-summary">0 items • ₹0</div>
+    </div>
+  </a>
+
+  <a id="back-home" class="back-home" href="index.html">← Home</a>
+
+  <div id="toast">Added to cart</div>
+
+<script>
+/* --------- Shared Cart + Table param logic --------- */
+const tableNumber = new URLSearchParams(window.location.search).get('table') || 'N/A';
+
+// simple cart in localStorage under key 'mezoCart'
+function getCart(){ try{ return JSON.parse(localStorage.getItem('mezoCart')||'[]'); }catch(e){return [];} }
+function saveCart(cart){ localStorage.setItem('mezoCart', JSON.stringify(cart)); updateCartIcon(); }
+function updateCartIcon(bounce=false){
+  const cart = getCart();
+  const count = cart.reduce((s,i)=>s+i.quantity,0);
+  const total = cart.reduce((s,i)=>s+i.quantity*i.price,0);
+  document.getElementById('cart-summary').textContent = `${count} item${count!==1?'s':''} • ₹${total}`;
+  // ensure checkout link includes table param
+  const base = 'checkout.html' + (tableNumber !== 'N/A' ? `?table=${encodeURIComponent(tableNumber)}` : '');
+  document.getElementById('checkout-link').href = base;
+  // home/back links
+  const homeHref = 'index.html' + (tableNumber !== 'N/A' ? `?table=${encodeURIComponent(tableNumber)}` : '');
+  document.getElementById('home-link').href = homeHref;
+  document.getElementById('back-home').href = homeHref;
+  if(bounce){
+    const el = document.getElementById('checkout-link');
+    el.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-8px)' }, { transform: 'translateY(0)' }], { duration: 450 });
+  }
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+/* --------- Navigation helper (keeps table param) ---------- */
+function navigateTo(p){
+  const url = p + (tableNumber !== 'N/A' ? `?table=${encodeURIComponent(tableNumber)}` : '');
+  window.location.href = url;
+}
+
+/* --------- Menu items (corrected: single-line strings; no literal newlines) ---------
+   Items below were taken from your menu PDF (thin crust pizza section) and put into
+   a clean JS array. Adjust price/description easily here.
+*/
+const menuItems = [
+  { id: 1, name: "Mushroom Gyoza", price: 495, description: "Stuffed assorted mushroom, homemade surprise sauce" },
+  { id: 2, name: "Basil Vegetable with Curry", price: 495, description: "Broccoli, water chestnut, corn, carrot, yellow curry" },
+  { id: 3, name: "Pak Choi & Corn", price: 475, description: "Water chestnut, garlic, soy, cream" },
+  { id: 4, name: "Yuzu Chicken Gyoza", price: 545, description: "Pan fried chicken dumpling, yuzu soy, scallion, fresh chili" },
+  { id: 5, name: "Schezwan Chicken Chili Oil", price: 545, description: "Spicy mince, brown garlic, chili flakes" }
+];
+
+
+/* ---------- Render cards ---------- */
+function renderMenu(){
+  const grid = document.getElementById('menu-grid');
+  grid.innerHTML = '';
+  for(const item of menuItems){
+    const card = document.createElement('article');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="dish">${escapeHtml(item.name)}</div>
+      <div class="desc">${escapeHtml(item.description)}</div>
+      <div class="price">₹${item.price}</div>
+      <div class="controls">
+        <div class="qty-control" style="margin-right:auto">
+          <button class="qty-btn" data-action="dec" aria-label="decrease">−</button>
+          <input class="qty-input" type="number" value="1" min="1" data-item="${item.id}">
+          <button class="qty-btn" data-action="inc" aria-label="increase">+</button>
+        </div>
+        <button class="add-btn" data-add="${item.id}">Add to cart</button>
+      </div>
+    `;
+    // attach handlers (delegated style)
+    grid.appendChild(card);
+  }
+}
+
+/* small helper to avoid XSS when injecting text */
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m]); }
+
+/* ---------- Cart operations ---------- */
+function addToCart(itemId, qty){
+  const item = menuItems.find(i=>i.id===itemId);
+  if(!item) return;
+  const cart = getCart();
+  const existing = cart.find(c=>c.id===itemId);
+  if(existing) existing.quantity += qty;
+  else cart.push({ id:item.id, name:item.name, price:item.price, quantity:qty });
+  saveCart(cart);
+  showToast(`✅ ${qty} x ${item.name} added`);
+  updateCartIcon(true);
+}
+
+/* ---------- Event delegation for buttons inside grid ---------- */
+document.addEventListener('click', function(e){
+  // qty +/- buttons
+  const dec = e.target.closest('[data-action="dec"]');
+  const inc = e.target.closest('[data-action="inc"]');
+  if(dec || inc){
+    const parent = (dec||inc).closest('.qty-control');
+    const input = parent.querySelector('.qty-input');
+    let v = parseInt(input.value)||1;
+    v = dec ? Math.max(1, v-1) : v+1;
+    input.value = v;
+    return;
+  }
+  // add to cart
+  const addBtn = e.target.closest('[data-add]');
+  if(addBtn){
+    const id = Number(addBtn.getAttribute('data-add'));
+    const parent = addBtn.closest('.card');
+    const input = parent.querySelector('.qty-input');
+    const qty = Math.max(1, parseInt(input.value)||1);
+    addToCart(id, qty);
+    input.value = 1;
+    return;
+  }
+});
+
+/* ---------- initialize ---------- */
+document.addEventListener('DOMContentLoaded', function(){
+  // make category select keep same table param when navigating
+  const opts = document.querySelectorAll('#category-select option');
+  for(const o of opts){
+    // nothing to change now — navigateTo handles param
+  }
+  // when user changes homepage dropdown, navigateTo will add table param
+  renderMenu();
+  updateCartIcon();
+  // show table number in title area (optional)
+  if(tableNumber !== 'N/A'){
+    document.title = `MEZO — Pizzas — Table ${tableNumber}`;
+  }
+});
+</script>
+</body>
+</html>
+ 

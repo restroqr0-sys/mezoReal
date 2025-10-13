@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MEZO - Checkout</title>
+
+  <style>
+    /* --- THEME COLORS & RESETS --- */
+    :root {
+      --primary-green: #004d40; /* Very Dark Green */
+      --accent-green: #388e3c; /* Darker Accent Green */
+      --light-bg: #e0f2f1; /* Light Teal/Green Background */
+      --text-color: #212121;
+      --shadow-soft: 0 6px 20px rgba(0, 0, 0, 0.2);
+      --danger-red: #d32f2f;
+    }
+
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      color: var(--text-color);
+      background-color: var(--light-bg);
+      /* Dark green overlay above background image */
+      background-image: linear-gradient(
+          rgba(0, 77, 64, 0.4),
+          rgba(56, 142, 60, 0.4)
+        ),
+        url("https://picsum.photos/1200/800?nature,green");
+      background-blend-mode: overlay;
+      background-size: cover;
+      background-attachment: fixed;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 750px;
+      margin: 40px auto;
+      padding: 30px;
+      background-color: white;
+      border-radius: 15px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .header {
+      text-align: center;
+      color: var(--primary-green);
+      margin-bottom: 30px;
+      border-bottom: 4px solid var(--accent-green);
+      padding-bottom: 10px;
+      font-size: 2em;
+    }
+
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 15px 0;
+      border-bottom: 1px solid #eee;
+      gap: 10px;
+    }
+
+    .cart-item:last-child {
+      border-bottom: none;
+    }
+
+    .item-details {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      min-width: 150px;
+    }
+
+    .item-name {
+      font-weight: 600;
+      color: var(--text-color);
+      margin-bottom: 4px;
+    }
+
+    .item-qty-price {
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    .item-actions-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 5px 10px;
+      border: 1px solid var(--accent-green);
+      border-radius: 8px;
+      background-color: var(--light-bg);
+      min-width: 170px;
+    }
+
+    .quantity-controls {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .qty-button {
+      background-color: var(--accent-green);
+      color: white;
+      border: none;
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1.1rem;
+      line-height: 1;
+      transition: background-color 0.2s;
+    }
+
+    .qty-button:hover {
+      background-color: var(--primary-green);
+    }
+
+    .item-quantity {
+      font-weight: 700;
+      min-width: 15px;
+      text-align: center;
+    }
+
+    .remove-button {
+      background: none;
+      border: none;
+      color: var(--danger-red);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 0 0 0 10px;
+      border-left: 1px solid #ccc;
+      line-height: 1;
+    }
+
+    .remove-button:hover {
+      color: darkred;
+    }
+
+    .item-price-total {
+      font-weight: 700;
+      color: var(--primary-green);
+      min-width: 80px;
+      text-align: right;
+      padding-left: 10px;
+    }
+
+    .cart-summary {
+      padding: 20px 0;
+      margin-top: 20px;
+      border-top: 3px solid var(--primary-green);
+      display: flex;
+      justify-content: space-between;
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--primary-green);
+    }
+
+    .empty-cart {
+      text-align: center;
+      padding: 50px 0;
+      color: #999;
+      font-size: 1.1rem;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+    }
+
+    .whatsapp-button {
+      display: block;
+      width: 100%;
+      padding: 15px;
+      margin-top: 20px;
+      background-color: #25d366;
+      color: white;
+      text-align: center;
+      text-decoration: none;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .whatsapp-button:hover {
+      background-color: #128c7e;
+      transform: translateY(-2px);
+    }
+
+    .back-button {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      background-color: var(--accent-green);
+      color: white;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 10px;
+      font-weight: 600;
+      transition: background-color 0.2s;
+    }
+
+    .back-button:hover {
+      background-color: var(--primary-green);
+    }
+
+    .table-info {
+      font-size: 1.1rem;
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 10px;
+      background-color: var(--light-bg);
+      border: 2px solid var(--accent-green);
+      border-radius: 8px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h2 class="header">🛒 Your Order Summary</h2>
+
+    <div class="table-info">
+      Ordering for Table: <strong id="table-number-display">N/A</strong>
+    </div>
+
+    <div id="cart-items-list"></div>
+
+    <div class="cart-summary">
+      <span>Total (Excl. GST):</span>
+      <span id="order-total">₹0</span>
+    </div>
+
+    <a
+      id="whatsapp-checkout-link"
+      class="whatsapp-button"
+      href="#"
+      target="_blank"
+      onclick="clearCartAndRedirect(event)"
+    >
+      Place Order via WhatsApp →
+    </a>
+
+    <a id="back-link" href="index.html" class="back-button">← Back to Menu</a>
+  </div>
+
+  <script>
+    const tableNumber =
+      new URLSearchParams(window.location.search).get("table") || "N/A";
+    const restaurantPhone = "918078618395"; // WhatsApp number (no +)
+
+    function getCart() {
+      try {
+        const cart = JSON.parse(localStorage.getItem("mezoCart")) || [];
+        return Array.isArray(cart) ? cart : [];
+      } catch (e) {
+        console.error("Error parsing cart:", e);
+        return [];
+      }
+    }
+
+    function saveCart(cart) {
+      localStorage.setItem("mezoCart", JSON.stringify(cart));
+    }
+
+    function clearCart() {
+      localStorage.removeItem("mezoCart");
+    }
+
+    function updateQuantity(itemIndex, change) {
+      const cart = getCart();
+      const index = parseInt(itemIndex);
+
+      if (index >= 0 && index < cart.length) {
+        const newQuantity = cart[index].quantity + change;
+        if (newQuantity > 0) {
+          cart[index].quantity = newQuantity;
+        } else {
+          cart.splice(index, 1);
+        }
+        saveCart(cart);
+        renderCart();
+      }
+    }
+
+    function removeItem(itemIndex) {
+      const cart = getCart();
+      const index = parseInt(itemIndex);
+      if (index >= 0 && index < cart.length) {
+        cart.splice(index, 1);
+        saveCart(cart);
+        renderCart();
+      }
+    }
+
+    function renderCart() {
+      const cart = getCart();
+      const listContainer = document.getElementById("cart-items-list");
+      const totalElement = document.getElementById("order-total");
+      let totalAmount = 0;
+      let orderListText = "";
+
+      listContainer.innerHTML = "";
+
+      if (cart.length === 0) {
+        listContainer.innerHTML =
+          '<div class="empty-cart">Your cart is empty. Add some jungle flavors! 🌴</div>';
+        document.getElementById("whatsapp-checkout-link").style.display = "none";
+        totalElement.textContent = "₹0";
+        return;
+      }
+
+      cart.forEach((item, index) => {
+        const subtotal = item.price * item.quantity;
+        totalAmount += subtotal;
+
+        const itemDiv = document.createElement("div");
+        itemDiv.className = "cart-item";
+        itemDiv.innerHTML = `
+          <div class="item-details">
+            <span class="item-name">${index + 1}. ${item.name}</span>
+            <span class="item-qty-price">@ ₹${item.price}</span>
+          </div>
+          <div class="item-actions-box">
+            <div class="quantity-controls">
+              <button class="qty-button" onclick="updateQuantity(${index}, -1)">-</button>
+              <span class="item-quantity">${item.quantity}</span>
+              <button class="qty-button" onclick="updateQuantity(${index}, 1)">+</button>
+            </div>
+            <button class="remove-button" onclick="removeItem(${index})" aria-label="Remove Item">&times;</button>
+          </div>
+          <div class="item-price-total">₹${subtotal}</div>
+        `;
+        listContainer.appendChild(itemDiv);
+
+        orderListText += `${index + 1}. ${item.name} (x${item.quantity}) - ₹${subtotal}\n`;
+      });
+
+      totalElement.textContent = `₹${totalAmount}`;
+
+      const whatsappMessage = `Hello MEZO! Here’s my order from Table ${tableNumber}:\n\n${orderListText}\nTotal: ₹${totalAmount} (Excl. GST)`;
+      const waLink = `https://wa.me/${restaurantPhone}?text=${encodeURIComponent(
+        whatsappMessage
+      )}`;
+
+      const checkoutLink = document.getElementById("whatsapp-checkout-link");
+      checkoutLink.href = waLink;
+      checkoutLink.style.display = "block";
+    }
+
+    function clearCartAndRedirect(event) {
+      if (getCart().length === 0) {
+        event.preventDefault();
+        return;
+      }
+      setTimeout(clearCart, 2000); // safer delay
+    }
+
+    function initializePage() {
+      document.getElementById("table-number-display").textContent = tableNumber;
+      document.getElementById("back-link").href = `index.html${
+        tableNumber !== "N/A" ? `?table=${tableNumber}` : ""
+      }`;
+      renderCart();
+    }
+
+    document.addEventListener("DOMContentLoaded", initializePage);
+  </script>
+</body>
+</html>

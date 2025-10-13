@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+<title>MEZO — SIGNATURE COCKTAILS</title>
+<style>
+  :root{
+    --primary-green:#2e7d32;
+    --accent-green:#66bb6a;
+    --light-bg:#f1f8e9;
+    --text:#333;
+    --radius:12px;
+    --shadow:0 6px 20px rgba(46,125,50,0.12);
+    --glass:rgba(255,255,255,0.85);
+  }
+  *{box-sizing:border-box;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+  html,body{height:100%;margin:0;background:linear-gradient(135deg,#eaf6ea 0%, #f1fbf1 50%);color:var(--text);}
+  /* Header */
+  .header{
+    position:sticky;top:0;z-index:120;background:linear-gradient(90deg,var(--primary-green),var(--accent-green));
+    color:#fff;padding:14px 16px;display:flex;align-items:center;gap:12px;backdrop-filter:blur(4px);
+  }
+  .logo{font-weight:900;font-size:1.25rem;text-decoration:none;color:#fff}
+  .tag{font-size:0.9rem;opacity:0.95}
+  .spacer{flex:1}
+  .category-title{font-weight:700;font-size:1rem;text-transform:capitalize;}
+  /* Dropdown */
+  .dropdown{
+    background:#fff;color:var(--primary-green);border:none;padding:6px 10px;border-radius:8px;
+    font-weight:600;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.1);
+  }
+  /* Layout */
+  .container{max-width:1200px;margin:18px auto;padding:0 16px 90px;}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .card{
+    background:var(--glass);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);
+    display:flex;flex-direction:column;min-height:170px;border-left:6px solid var(--accent-green);
+  }
+  .dish{font-weight:800;color:var(--primary-green);font-size:1.05rem;margin-bottom:6px}
+  .desc{color:#586066;font-size:0.9rem;flex:1;margin-bottom:8px}
+  .price{font-weight:700;margin-bottom:10px}
+  .controls{display:flex;gap:10px;align-items:center}
+  .qty-control{display:flex;align-items:center;border-radius:8px;overflow:hidden;border:1px solid rgba(0,0,0,0.06)}
+  .qty-btn{background:var(--accent-green);border:none;color:#fff;padding:8px 10px;cursor:pointer;font-weight:700}
+  .qty-input{width:46px;text-align:center;border:0;padding:8px;font-weight:700}
+  .add-btn{background:var(--primary-green);border:none;color:#fff;padding:10px 12px;border-radius:8px;cursor:pointer;font-weight:800}
+  /* Floating cart & back */
+  .floating-cart{position:fixed;right:16px;bottom:16px;background:linear-gradient(180deg,var(--primary-green),var(--accent-green));color:#fff;border-radius:999px;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 12px 30px rgba(46,125,50,0.18);z-index:200}
+  .floating-cart .tot{font-weight:800;font-size:0.95rem}
+  .back-home{position:fixed;left:16px;bottom:18px;background:var(--accent-green);color:#fff;padding:8px 12px;border-radius:10px;text-decoration:none;box-shadow:0 8px 18px rgba(46,125,50,0.12)}
+  /* Toast */
+  #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:26px;background:var(--primary-green);color:#fff;padding:10px 14px;border-radius:10px;opacity:0;pointer-events:none;transition:300ms;z-index:300}
+  #toast.show{opacity:1;pointer-events:auto}
+  /* Responsive */
+  @media (max-width:1000px){ .grid{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width:640px){
+    .grid{grid-template-columns:1fr;gap:12px}
+    .header{flex-wrap:wrap;padding:12px}
+    .category-title{display:block;width:100%;margin-top:6px}
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <a id="home-link" class="logo" href="index.html">MEZO</a>
+  <div class="tag">Taste the Wild Essence of Nature 🌱</div>
+  <div class="spacer"></div>
+  <div class="category-title">Signature cocktails</div>
+  <select id="category-select" class="dropdown" onchange="navigateTo(this.value)">
+    <option value="index.html">All Categories</option>
+    <option value="pizzas.html">Thin Crust Pizzas</option>
+    <option value="desserts.html">Desserts</option>
+    <option value="drinks.html">Drinks</option>
+    <option value="veg-appetizer.html">Veg Appetizer</option>
+    <option value="signature-cocktails.html" selected>Signature Cocktails</option>
+  </select>
+</header>
+
+<main class="container">
+  <section class="grid" id="menu-grid"></section>
+</main>
+
+<a id="checkout-link" class="floating-cart" href="checkout.html" title="View cart">
+  <div>🛒</div>
+  <div style="display:flex;flex-direction:column;line-height:1">
+    <div style="font-size:0.8rem">Cart</div>
+    <div class="tot" id="cart-summary">0 items • ₹0</div>
+  </div>
+</a>
+
+<a id="back-home" class="back-home" href="index.html">← Home</a>
+
+<div id="toast">Added to cart</div>
+
+<script>
+const tableNumber = new URLSearchParams(window.location.search).get('table') || 'N/A';
+
+function getCart(){ try{return JSON.parse(localStorage.getItem('mezoCart')||'[]');}catch(e){return [];} }
+function saveCart(c){ localStorage.setItem('mezoCart',JSON.stringify(c)); updateCartIcon(); }
+function updateCartIcon(bounce=false){
+  const c=getCart();
+  const count=c.reduce((s,i)=>s+i.quantity,0);
+  const total=c.reduce((s,i)=>s+i.quantity*i.price,0);
+  document.getElementById('cart-summary').textContent=`${count} item${count!==1?'s':''} • ₹${total}`;
+  const base='checkout.html'+(tableNumber!=='N/A'?`?table=${encodeURIComponent(tableNumber)}`:'');
+  document.getElementById('checkout-link').href=base;
+  const home='index.html'+(tableNumber!=='N/A'?`?table=${encodeURIComponent(tableNumber)}`:'');
+  document.getElementById('home-link').href=home;
+  document.getElementById('back-home').href=home;
+  if(bounce){
+    document.getElementById('checkout-link')
+      .animate([{transform:'translateY(0)'},{transform:'translateY(-8px)'},{transform:'translateY(0)'}],{duration:450});
+  }
+}
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+
+/* ✅ Dropdown Redirect Fix */
+function navigateTo(page){
+  const tableParam = tableNumber !== 'N/A' ? `?table=${encodeURIComponent(tableNumber)}` : '';
+  window.location.href = page + tableParam;
+}
+
+const menuItems = [
+  // --- From image_1217bd.png ---
+  {
+    id: 1101,
+    name: " GOLDEN HARVEST 🥃🌽",
+    price: 725,
+    description: "Earthy bourbon meets rustic sweetness, with a luxurious chocolate finish. Corn infused bourbon and maple syrup, bringing warmth and indulgence to every sip."
+  },
+  {
+    id: 1102,
+    name: " CANDY BLISS 🍬🍓",
+    price: 725,
+    description: "Fruity and sweet with a whimsical cotton candy twist. Tequila and mixed berries come together, topped with melting cotton candy that adds a subtle sweetness to the fruity explosion."
+  },
+
+  // --- From image_1214f8.png ---
+  {
+    id: 1103,
+    name: "SPICED VELVET COOKIE 🍪🥛",
+    price: 725,
+    description: "Buttery sweetness meets warm spices with a nutty finish. A delightful mix of vodka, homemade cookie cordial, and spiced notes of cinnamon, clove, and nutmeg."
+  },
+  {
+    id: 1104,
+    name: " CITRUS SILK 🍸🍋",
+    price: 725,
+    description: "Bright and zesty with an elegant, silky finish. Vodka based cocktail combines the zest of orange and lime with a fragrant kaffir lime and lemongrass cordial. Enhanced by agar wash."
+  },
+
+  // --- From image_121113.png ---
+  {
+    id: 1105,
+    name: " POP A CORN 🍿🍹",
+    price: 695,
+    description: "Savory and sweet with a refreshing crispness. Popcorn infused gin and crisp apple juice create a delightful contrast. Served with a side of popcorn."
+  },
+  {
+    id: 1106,
+    name: " AN APPLE A DAY 🍎🥃",
+    price: 695,
+    description: "Crisp and refreshing with a warm spiced depth. Bourbon meets green apple, with cardamom adding aromatic warmth. A perfect balance of sweet, tart, and rich flavors."
+  },
+  {
+    id: 1107,
+    name: " REFRESHING TASTE OF BERRY TONIC 🍓 tonic",
+    price: 695,
+    description: "A fun twist on the classic G&T. Tempered combines the bright flavors of passion fruit with the crispness of berry florals. The drink is light yet refreshing."
+  },
+  {
+    id: 1108,
+    name: " BLUSHING GARDEN 🌸🥒",
+    price: 695,
+    description: "The floral sweetness from the homemade rose cordial. Infusion of gin and cucumber and fresh rose, creating a delicate fusion of Indian tonic."
+  },
+  {
+    id: 1109,
+    name: " BERYLICIOUS G&T 🍒 tonic",
+    price: 695,
+    description: "Delivering fruity sweetness with a refreshing burst. Combines fruity tart berries with crisp gin and tonic for a refreshing and fun cocktail."
+  },
+
+  // --- From image_12141c.png ---
+  {
+    id: 1110,
+    name: " MIDNIGHT BREW ☕️🍻",
+    price: 725,
+    description: "Bold coffee notes with a crisp malty finish. A robust blend of coffee-infused vodka and wheat beer, balancing bitter coffee with the refreshing snap of beer."
+  },
+  {
+    id: 1111,
+    name: " TROPICAL BREEZE 🥭☀️",
+    price: 725,
+    description: "Sweet mango meets crisp beer in a tropical twist. White rum and wheat beer come together in this mango-infused delight."
+  },
+
+  // --- From image_1210da.png ---
+  {
+    id: 1112,
+    name: " YUZU AFFAIR 🍊🍋",
+    price: 695,
+    description: "Bright and zesty yuzu puree meets the aromatic punch of kaffir lime cordial in a refreshing gin base. The tonic adds a crisp finish, while the lavash garnish provides a subtle crunch."
+  },
+  {
+    id: 1113,
+    name: "TRANQUIL BLOOM 🌸🍵",
+    price: 695,
+    description: "Floral touch, while the homemade spiced solution adds a subtle warmth. Tranquil Bloom offers a calming blend of floral chamomile, gentle spices, and elderflower tonic."
+  },
+
+  // --- From image_1214d1.png ---
+  {
+    id: 1114,
+    name: " HERBAL MIRAGE 🍃🍊",
+    price: 725,
+    description: "Crisp citrus blends with cooling herbs and a smooth finish. Gin's botanical beauty with grapefruit and lemon juice, paired with mint and rosemary cordial."
+  },
+  {
+    id: 1115,
+    name: " TROPICAL EMBER 🔥🍍",
+    price: 725,
+    description: "Smoky whiskey meets tropical freshness with a nutty twist. Creamy coconut and almond cordial blend harmoniously with pineapple juice. A warm yet refreshing drink."
+  },
+
+  // --- From image_121475.png ---
+  {
+    id: 1116,
+    name: " ZEN PASSION 🧘‍♀️🍹",
+    price: 725,
+    description: "Sweet and tart with earthy undertones and a bright citrus lift. Matcha infused tequila with passion fruit cordial and lime juice, balancing earthy and tropical flavors."
+  },
+  {
+    id: 1117,
+    name: "SPICED CITRUS WHISPER 🤫🍊",
+    price: 725,
+    description: "Warm and zesty with a creamy, frothy finish. A blend of orange and spices infused with vodka, kaffir lime, and citric acid. The egg white adds a velvety texture."
+  },
+
+  // --- From image_1213fb.png ---
+  {
+    id: 1118,
+    name: "PASSION DUO TOWER 🍹🍒",
+    price: 1050,
+    description: "Sweet and tangy with a vibrant, fruity complexity. Vodka, passion fruit, and peach shine, with cranberry juice adding a tart element for balance. Perfect for sharing with a friend!"
+  },
+  {
+    id: 1119,
+    name: "TIME AND JULIET 🧪🌹",
+    price: 725,
+    description: "Floral, fruity, and zesty with a clean, refreshing finish. Raspberries, gin, and blue pea tea infused, peach and citrus served live at your table for a theatrical experience."
+  },
+
+  // --- From image_121455.png ---
+  {
+    id: 1120,
+    name: "PANDAN GROVE 🌴🍊",
+    price: 725,
+    description: "Bold and rich with an intriguing blend of sweet pandan and zesty citrus. Bourbon with pandan and grapefruit, blending caramel warmth with a citrusy twist."
+  },
+  {
+    id: 1121,
+    name: "CRIMSON HARVEST 🌾🍺",
+    price: 725,
+    description: "Fruity and herbaceous with a crisp beer finish. Tequila and fresh basil bring herbal complexity to pomegranate, while wheat beer adds a malty backbone."
+  },
+
+  // --- From image_121498.png ---
+  {
+    id: 1122,
+    name: "LAVENDER FIG SMASH 💜🌿",
+    price: 725,
+    description: "Floral and fruity with a refreshing, zesty finish. Sweet figs and lavender meet tequila, with mint solution and lime juice adding a refreshing brightness."
+  },
+  {
+    id: 1123,
+    name: "COCONUT CLOUD 🥥☁️",
+    price: 725,
+    description: "Tropical and creamy with a refreshing minty twist. White rum infused with coconut oil, pineapple juice, and a mint cordial beneath a luxurious coconut foam."
+  }
+];
+
+/* ✅ Render Menu */
+function renderMenu(){
+  const grid=document.getElementById('menu-grid');
+  grid.innerHTML='';
+  for(const item of menuItems){
+    const card=document.createElement('article');
+    card.className='card';
+    card.innerHTML=`
+      <div class="dish">${escapeHtml(item.name)}</div>
+      <div class="desc">${escapeHtml(item.description)}</div>
+      <div class="price">₹${item.price}</div>
+      <div class="controls">
+        <div class="qty-control" style="margin-right:auto">
+          <button class="qty-btn" data-action="dec">−</button>
+          <input class="qty-input" type="number" value="1" min="1" data-item="${item.id}">
+          <button class="qty-btn" data-action="inc">+</button>
+        </div>
+        <button class="add-btn" data-add="${item.id}">Add to cart</button>
+      </div>`;
+    grid.appendChild(card);
+  }
+}
+
+/* ✅ Add to Cart */
+function addToCart(id,qty){
+  const item=menuItems.find(i=>i.id===id);
+  if(!item)return;
+  const c=getCart();const e=c.find(x=>x.id===id);
+  if(e)e.quantity+=qty;else c.push({id:item.id,name:item.name,price:item.price,quantity:qty});
+  saveCart(c);showToast(`✅ ${qty} x ${item.name} added`);updateCartIcon(true);
+}
+
+/* ✅ Event Handlers */
+document.addEventListener('click',e=>{
+  const dec=e.target.closest('[data-action="dec"]');
+  const inc=e.target.closest('[data-action="inc"]');
+  if(dec||inc){
+    const input=(dec||inc).closest('.qty-control').querySelector('.qty-input');
+    let v=parseInt(input.value)||1;
+    v=dec?Math.max(1,v-1):v+1;
+    input.value=v;return;
+  }
+  const add=e.target.closest('[data-add]');
+  if(add){
+    const id=Number(add.getAttribute('data-add'));
+    const input=add.closest('.card').querySelector('.qty-input');
+    const qty=Math.max(1,parseInt(input.value)||1);
+    addToCart(id,qty);input.value=1;return;
+  }
+});
+
+/* ✅ Initialize */
+document.addEventListener('DOMContentLoaded',()=>{
+  renderMenu();updateCartIcon();
+  if(tableNumber!=='N/A')document.title=`MEZO — Indian Main Course — Table ${tableNumber}`;
+});
+</script>
+</body>
+</html>

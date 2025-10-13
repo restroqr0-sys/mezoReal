@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mezo Jaipur - Cocktail Craftsmanship (Responsive)</title>
+    <style>
+        /* Base Styles */
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0; /* Adjust padding to be in container for better control */
+            background-color: #f9f7f4; 
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto; /* Center on large screens */
+            padding: 20px; /* Reduced padding for mobile */
+            background-color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: none; /* Removed border for clean mobile look, can be added back if desired */
+        }
+
+        /* Header and Titles */
+        .header {
+            text-align: left; /* Aligned left for better mobile readability */
+            border-right: none;
+            border-left: 5px solid #a80000; /* Moving accent to the left for better flow */
+            padding-left: 15px;
+            padding-right: 0;
+            margin-bottom: 30px;
+        }
+
+        .welcome-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2em; /* Smaller font for mobile */
+            color: #a80000;
+            margin: 0;
+            letter-spacing: 3px; /* Reduced letter spacing */
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            font-family: 'Playfair Display', serif;
+            font-size: 1em;
+            color: #555;
+            margin-top: 5px;
+        }
+
+        .craftsmanship-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.7em; /* Smaller font for mobile */
+            color: #a80000;
+            margin-top: 30px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #a80000;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 20px;
+        }
+
+        .intro-text, .section-content {
+            font-size: 1em; /* Standard font size */
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        /* Technique Grid - Key for Responsiveness */
+        .technique-grid {
+            display: grid;
+            grid-template-columns: 1fr; /* Single column layout for mobile */
+            gap: 20px; /* Reduced gap for mobile */
+            margin-top: 20px;
+        }
+
+        .technique-box {
+            padding: 15px;
+            border-left: 3px solid #a80000;
+            background-color: #fafafa;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .technique-box:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transform: none; /* Removed subtle hover effect on mobile for performance */
+        }
+
+        .technique-box strong {
+            display: block;
+            font-family: 'Roboto', sans-serif;
+            font-size: 1.1em;
+            color: #a80000;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        /* Script Demonstration Style */
+        .script-output {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e0e0e0;
+            border: 1px dashed #a80000;
+            text-align: center;
+            font-style: italic;
+            font-size: 0.9em;
+        }
+
+
+        /* --- Media Query for Tablet and Desktop (Min-width 768px) --- */
+        @media (min-width: 768px) {
+            body {
+                padding: 40px; /* Restore desktop padding */
+            }
+            
+            .container {
+                padding: 40px; /* Restore desktop inner padding */
+                margin: 40px auto;
+                border: 1px solid #ddd;
+            }
+
+            .header {
+                text-align: right; /* Restore original desktop alignment */
+                border-right: 5px solid #a80000;
+                border-left: none;
+                padding-right: 20px;
+                padding-left: 0;
+            }
+
+            .welcome-title {
+                font-size: 3em; /* Restore large desktop font */
+                letter-spacing: 5px;
+            }
+
+            .craftsmanship-title {
+                font-size: 2em;
+                letter-spacing: 2px;
+            }
+
+            .technique-grid {
+                /* Two columns for tablets/medium screens, three for large desktops */
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 30px;
+                margin-top: 30px;
+            }
+
+            .technique-box:hover {
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+                transform: translateY(-2px); /* Restore subtle hover effect */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1 class="welcome-title">WELCOME TO MEZO</h1>
+            <p class="subtitle">The Pinnacle of Luxury Mixology</p>
+        </div>
+
+        <div class="intro-text">
+            At Mezo Jaipur, we believe in pushing the boundaries of traditional cocktailmaking to deliver a drinking experience unlike any other. Our mission is to craft cocktails that transcend the ordinary—each glass is a canvas where art, flavor, and innovation collide. Renowned for serving timeless cocktails with masterful and globally sourced ingredients, we offer a journey for both the refined palate and the adventurous spirit.
+        </div>
+
+        <h2 class="craftsmanship-title">OUR CRAFTSMANSHIP</h2>
+
+        <div class="intro-text">
+            At Mezo Jaipur, cocktail creation is treated as a sophisticated craft, using techniques that blend innovation with artisanal dedication:
+        </div>
+
+        <div class="technique-grid">
+
+            <div class="technique-box">
+                <strong>Clarification:</strong>
+                Using advanced clarification methods—like milk washing, we strip away crystals, clear and visually stunning. This process not only refines the drink's appearance but also enhances the smoothness and purity of flavors, providing a silky mouthfeel that is unmatched.
+            </div>
+
+            <div class="technique-box">
+                <strong>Sous Vide Infusion:</strong>
+                To intensify the flavors of our ingredients, we use the sous vide technique—a precise method where ingredients are slow-cooked under vacuum-sealed conditions. This process ensures the maximum extraction of flavors from herbs, spices, and fruits without overcooking them, resulting in rich, well-balanced cocktails with depth and complexity.
+            </div>
+
+            <div class="technique-box">
+                <strong>Fat Washing:</strong>
+                Fatwashing allows us to incorporate the richness of ingredients like butter or coconut oil into our spirits without the heaviness. By infusing spirits with fats, and then freezing and straining them, we achieve a velvety texture and a subtle layering of flavors that elevate our cocktails to new heights.
+            </div>
+
+            <div class="technique-box">
+                <strong>Custom Cordials and Syrups:</strong>
+                We pride ourselves on creating all our syrups, cordials, and brines in-house. These include salt cordials, spiced syrups, and exotic fruit cordials, which add bold and dynamic layers of flavor to every drink. Freshness is guaranteed, with no artificial flavors or additives, ensuring that every cocktail bursts with an authentic and natural taste.
+            </div>
+
+        </div>
+
+        <div class="script-output">
+            <p id="time-message">Loading message...</p>
+        </div>
+    </div>
+
+    <script>
+        // Simple script to demonstrate inclusion and basic DOM manipulation
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const now = new Date();
+            const hour = now.getHours();
+            let greeting;
+
+            if (hour < 12) {
+                greeting = "Good Morning! Enjoy Mezo's Craftsmanship.";
+            } else if (hour < 18) {
+                greeting = "Good Afternoon! Explore the Mixology Techniques.";
+            } else {
+                greeting = "Good Evening! Time for a crafted cocktail.";
+            }
+
+            document.getElementById('time-message').textContent = greeting;
+        });
+    </script>
+
+</body>
+</html>
